@@ -39,7 +39,7 @@ class ArmyReserveSpider(GCSpider):
             # encode spaces from pdf names
             web_url = web_url.replace(" ", "%20")
 
-            cac_login_required = True if "usar.dod.afpims.mil" in web_url else False
+            cac_login_required = "usar.dod.afpims.mil" in web_url
 
             downloadable_items = [
                 {
@@ -53,9 +53,9 @@ class ArmyReserveSpider(GCSpider):
             # some are nested in span
             if doc_title_raw is None:
                 doc_title_raw = item.css('a span::text').get()
-                # some dont have anything except the name e.g. FY20 USAR IDT TRP Policy Update
-                if doc_title_raw is None:
-                    doc_title_raw = doc_name_raw
+            # some dont have anything except the name e.g. FY20 USAR IDT TRP Policy Update
+            if doc_title_raw is None:
+                doc_title_raw = doc_name_raw
 
             doc_name = self.clean(doc_name_raw)
             doc_title = self.clean(doc_title_raw)

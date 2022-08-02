@@ -25,16 +25,16 @@ def run(crawler:Optional[str]) -> None:
     if crawler:
         if crawler in spider_loader.list():
             # run only the crawler name provided
-            print("Running spider %s" % (crawler))
+            print(f"Running spider {crawler}")
             process.crawl(crawler)
         else:
-            print(" %s crawler not implemented." %(crawler))
+            print(f" {crawler} crawler not implemented.")
             return
 
     else:
         print(spider_loader.list())
         for spider_name in spider_loader.list():
-            print("Running spider %s" % (spider_name))
+            print(f"Running spider {spider_name}")
             process.crawl(spider_name)
 
     process.start()

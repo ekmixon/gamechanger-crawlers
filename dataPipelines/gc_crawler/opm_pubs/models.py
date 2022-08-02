@@ -36,37 +36,34 @@ class OPMParser(Parser):
         # get target column of list items
         parsed_docs = []
         li_list = soup.find_all('li')
+        doc_type = 'OMBM'
+        chapter_date = ''
+        cac_login_required = False
+        exp_date = ''
+        issuance_num = ''
         for li in li_list:
-            doc_type = 'OMBM'
             doc_num = ''
             doc_name = ''
             doc_title = ''
-            chapter_date = ''
             publication_date = ''
-            cac_login_required = False
             pdf_url = ''
-            exp_date = ''
-            issuance_num = ''
             pdf_di = None
             if 'supersede' not in li.text.lower():
                 a_list = li.findChildren('a')
                 for a in a_list:
                     link = a.get('href', None) or a.get('data-copy-href', None)
                     if link.lower().endswith('.pdf'):
-                        if link.startswith('http'):
-                            pdf_url = link
-                        else:
-                            pdf_url = base_url + link.strip()
+                        pdf_url = link if link.startswith('http') else base_url + link.strip()
                     commaTokens = a.text.strip().split(',', 1)
                     spaceTokens = a.text.strip().split(' ', 1)
                     if len(commaTokens) > 1 and len(commaTokens[0]) < len(spaceTokens[0]):
                         doc_num=commaTokens[0]
                         doc_title=re.sub(r'^.*?,', '', a.text.strip())
-                        doc_name="OMBM " + doc_num
+                        doc_name = f"OMBM {doc_num}"
                     elif len(spaceTokens) > 1 and len(spaceTokens[0]) < len(commaTokens[0]):
                         doc_num=spaceTokens[0].rstrip(',.*')
                         doc_title=spaceTokens[1]
-                        doc_name="OMBM " + doc_num
+                        doc_name = f"OMBM {doc_num}"
                     possible_date=li.text[li.text.find("(")+1:li.text.find(")")]
                     if re.match(pattern=r".*, \d{4}.*", string=possible_date):
                         publication_date=possible_date

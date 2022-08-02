@@ -30,11 +30,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        SECNAVCrawler()
-        if not fake_run
-        else FakeSECNAVCrawler()
-    )
+    crawler = FakeSECNAVCrawler() if fake_run else SECNAVCrawler()
 
     results = (
         crawler.iter_output_json()

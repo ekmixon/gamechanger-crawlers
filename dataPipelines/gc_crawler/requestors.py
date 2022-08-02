@@ -122,8 +122,9 @@ class FileBasedPseudoRequestor(Requestor):
                 file_url = "/source_sample_dir/articles/article_1.html
         """
         real_file_path: Path = self.source_sample_dir_path.absolute().joinpath(
-            "." + urlparse(fake_url).path
+            f".{urlparse(fake_url).path}"
         )
+
 
         if real_file_path.is_file():
             return real_file_path
@@ -161,8 +162,7 @@ class MapBasedPseudoRequestor(Requestor):
         elif isinstance(self.url_text_map, dict):
             mapped_text = self.url_text_map.get(url, None)  # type: ignore
 
-        response_text = mapped_text or self.default_text
-        if not response_text:
-            raise KeyError("No text defined for this URL: {}".format(url))
-        else:
+        if response_text := mapped_text or self.default_text:
             return response_text
+        else:
+            raise KeyError(f"No text defined for this URL: {url}")

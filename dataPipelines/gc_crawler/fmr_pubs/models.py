@@ -23,7 +23,7 @@ class FMRPager(Pager):
         d = [i.get_text() for i in m]
 
         for vol in d[1:-1]:
-            yield 'https://comptroller.defense.gov/FMR/vol{}_chapters.aspx'.format(vol)
+            yield f'https://comptroller.defense.gov/FMR/vol{vol}_chapters.aspx'
 
 
 class FMRParser(Parser):
@@ -62,7 +62,7 @@ class FMRParser(Parser):
         da = [" ".join(m.get_text().replace('\xa0', ' ').split()) for m in da]
 
         # removing archives
-        indices = [i for i, x in enumerate(li) if x == None]
+        indices = [i for i, x in enumerate(li) if x is None]
         for i in indices[::-1]:
             del ch[i]
             del li[i]
@@ -79,7 +79,7 @@ class FMRParser(Parser):
         parsed_docs = []
         for i, j in enumerate(ch):
             doc_name = ' '.join(s.find('h2').get_text().split()[:2]) + ', ' + ch[i].replace('\u00a0', '') + ' : ' + f'"{de[i]}"'
-            doc_num = "V{}CH{}".format(s.find('h2').get_text().split()[1], j.split()[-1][:3])
+            doc_num = f"V{s.find('h2').get_text().split()[1]}CH{j.split()[-1][:3]}"
             doc_type = li[i][li[i].rfind('.') + 1:]
             web_url = li[i]
             pub_date = da[i]
@@ -95,7 +95,7 @@ class FMRParser(Parser):
                 )
 
             doc = Document(
-                doc_name="DoDFMR "+doc_num,
+                doc_name=f"DoDFMR {doc_num}",
                 doc_title=doc_name,
                 doc_num=doc_num,
                 doc_type="DoDFMR",
@@ -104,8 +104,9 @@ class FMRParser(Parser):
                 cac_login_required=False,
                 version_hash_raw_data=version_hash_fields,
                 downloadable_items=[dl],
-                crawler_used="fmr_pubs"
+                crawler_used="fmr_pubs",
             )
+
 
             parsed_docs.append(doc)
 

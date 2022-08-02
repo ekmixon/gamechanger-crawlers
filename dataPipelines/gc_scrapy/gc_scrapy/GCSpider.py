@@ -55,10 +55,7 @@ class GCSpider(scrapy.Spider):
         path = urlparse(url).path
         ext: str = splitext(path)[1].replace('.', '').lower()
 
-        if not ext:
-            return UNKNOWN_FILE_EXTENSION_PLACEHOLDER
-
-        return ext.strip()
+        return ext.strip() if ext else UNKNOWN_FILE_EXTENSION_PLACEHOLDER
 
     @staticmethod
     def get_href_file_extension_does_exist(url: str) -> typing.Tuple[str, bool]:
@@ -70,10 +67,11 @@ class GCSpider(scrapy.Spider):
         path = urlparse(url).path
         ext: str = splitext(path)[1].replace('.', '').lower()
 
-        if not ext:
-            return (UNKNOWN_FILE_EXTENSION_PLACEHOLDER, False)
-
-        return (ext.strip(), True)
+        return (
+            (ext.strip(), True)
+            if ext
+            else (UNKNOWN_FILE_EXTENSION_PLACEHOLDER, False)
+        )
 
     @staticmethod
     def ascii_clean(text: str) -> str:
@@ -89,11 +87,7 @@ class GCSpider(scrapy.Spider):
         """
             checks if href is relative and adds to base if needed
         """
-        if href_raw.startswith('/'):
-            web_url = urljoin(url_base, href_raw)
-        else:
-            web_url = href_raw
-
+        web_url = urljoin(url_base, href_raw) if href_raw.startswith('/') else href_raw
         return web_url.strip()
 
     @staticmethod

@@ -24,10 +24,11 @@ def run(
 ) -> None:
 
     crawler = (
-        ExampleCrawler(starting_url=starting_url)
-        if not fake_run
-        else FakeExampleCrawler()
+        FakeExampleCrawler()
+        if fake_run
+        else ExampleCrawler(starting_url=starting_url)
     )
+
 
     results = (
         crawler.iter_output_json()

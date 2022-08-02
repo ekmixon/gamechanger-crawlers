@@ -30,11 +30,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        AFCrawler()
-        if not fake_run
-        else FakeAFCrawler()
-    )
+    crawler = FakeAFCrawler() if fake_run else AFCrawler()
 
     results = (
         crawler.iter_output_json()

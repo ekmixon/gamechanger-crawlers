@@ -53,20 +53,18 @@ class NatoSpider(GCSeleniumSpider):
                     doc_type = doc_.split('-', 1)[0].strip().replace(" ", "_")
                     if len(doc_helper.split()) > 1:
                         if re_1.match(doc_helper.split()[1].strip()):
-                            doc_num = doc_num + "_VOL" + \
-                                doc_helper.split()[1].strip()
+                            doc_num = (f"{doc_num}_VOL" + doc_helper.split()[1].strip())
                         if re_2.match(doc_helper.split()[1].strip()):
-                            doc_num = doc_num + "_PART" + \
-                                doc_helper.split()[1].strip()
+                            doc_num = (f"{doc_num}_PART" + doc_helper.split()[1].strip())
 
                 if len(data[2].text.split("VOL")) > 1:
                     volume = data[2].text.split("VOL")[1].split()[0].strip()
-                    doc_num = doc_num + "_VOL" + volume
+                    doc_num = f"{doc_num}_VOL{volume}"
 
                 if len(data[2].text.split("PART")) > 1:
                     volume = data[2].text.split("PART")[1].split()[0].strip()
-                    doc_num = doc_num + "_PART" + volume
-                doc_name = doc_type + " " + doc_num
+                    doc_num = f"{doc_num}_PART{volume}"
+                doc_name = f"{doc_type} {doc_num}"
 
                 if len(data[2].text.split("Ed:")) > 1:
                     edition = data[2].text.split("Ed:")[1].strip()
@@ -77,11 +75,7 @@ class NatoSpider(GCSeleniumSpider):
                 pdf_suffix = data[4].find('a')
                 if pdf_suffix is None:
                     continue
-                if "../classDoc.htm" in pdf_suffix['href']:
-                    cac_login_required = True
-                else:
-                    cac_login_required = False
-
+                cac_login_required = "../classDoc.htm" in pdf_suffix['href']
                 di = {
                     'compression_type': None,
                     'doc_type': 'pdf',

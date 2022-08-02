@@ -18,7 +18,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = USCodeCrawler() if not fake_run else FakeUSCodeCrawler()
+    crawler = FakeUSCodeCrawler() if fake_run else USCodeCrawler()
 
     results = (
         crawler.iter_output_json()

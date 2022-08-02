@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        NavyMedCrawler()
-        if not fake_run
-        else FakeNavyMedCrawler()
-    )
+    crawler = FakeNavyMedCrawler() if fake_run else NavyMedCrawler()
 
     results = (
         crawler.iter_output_json()

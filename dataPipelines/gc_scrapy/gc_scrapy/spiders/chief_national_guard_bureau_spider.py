@@ -23,11 +23,7 @@ class CNGBISpider(GCSpider):
         for row in rows:
             href_raw = row.css('td:nth-child(1) a::attr(href)').get()
 
-            if not href_raw.startswith('/'):
-                cac_login_required = True
-            else:
-                cac_login_required = False
-
+            cac_login_required = not href_raw.startswith('/')
             web_url = self.ensure_full_href_url(href_raw, self.start_urls[0])
 
             file_type = self.get_href_file_extension(href_raw)

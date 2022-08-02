@@ -31,11 +31,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        ArmyCrawler()
-        if not fake_run
-        else FakeArmyCrawler()
-    )
+    crawler = FakeArmyCrawler() if fake_run else ArmyCrawler()
 
     results = (
         crawler.iter_output_json()

@@ -74,16 +74,11 @@ class CFRSpider(GCSpider):
         doc_title = title if is_index_type else title.title()
         doc_num = f"{title_num} Vol. {vol_num}" if vol_num else title_num
 
-        downloadable_items = []
         web_url = self.get_pdf_file_download_url_from_id(package_id)
 
-        downloadable_items.append(
-            {
-                "doc_type": "pdf",
-                "web_url": web_url,
-                "compression_type": None,
-            }
-        )
+        downloadable_items = [
+            {"doc_type": "pdf", "web_url": web_url, "compression_type": None}
+        ]
 
         version_hash_fields = {
             "publication_date": publication_date,
@@ -94,10 +89,10 @@ class CFRSpider(GCSpider):
             doc_name=package_id,
             doc_num=doc_num,
             doc_title=doc_title,
-            doc_type=doc_type,
+            display_doc_type=display_doc_type,
             display_doc_type=display_doc_type,
             publication_date=publication_date,
             source_page_url=source_page_url,
             downloadable_items=downloadable_items,
-            version_hash_raw_data=version_hash_fields
+            version_hash_raw_data=version_hash_fields,
         )

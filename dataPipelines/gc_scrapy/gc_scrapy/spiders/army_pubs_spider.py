@@ -43,29 +43,16 @@ class ArmySpider(GCSpider):
         doc_type_raw = doc_name_raw.split()[0]
         publication_date = rows.css("span#MainContent_PubForm_Date::text").get()
         dist_stm = rows.css("span#MainContent_PubForm_Dist_Rest::text").get()
-        if dist_stm and (dist_stm.startswith("A") or dist_stm.startswith("N")):
-            # the distribution statement is distribution A or says Not Applicable so anyone can access the information
-            cac_login_required = False
-        else:
-            # the distribution statement has more restrictions
-            cac_login_required = True
+        cac_login_required = (
+            not dist_stm
+            or not dist_stm.startswith("A")
+            and not dist_stm.startswith("N")
+        )
 
         linked_items = rows.css("div#MainContent_uoicontainer a")
         downloadable_items = []
 
-        if not linked_items:
-            # skip over the publication
-            filetype = rows.css("div#MainContent_uoicontainer::text").get()
-            if filetype:
-                di = {
-                    "doc_type": filetype.strip().lower(),
-                    "web_url": self.base_url,
-                    "compression_type": None
-                }
-                downloadable_items.append(di)
-            else:
-                return
-        else:
+        if linked_items:
             for item in linked_items:
                 di = {
                     "doc_type": item.css("::text").get().strip().lower(),
@@ -73,6 +60,15 @@ class ArmySpider(GCSpider):
                     "compression_type": None
                 }
                 downloadable_items.append(di)
+        elif filetype := rows.css("div#MainContent_uoicontainer::text").get():
+            di = {
+                "doc_type": filetype.strip().lower(),
+                "web_url": self.base_url,
+                "compression_type": None
+            }
+            downloadable_items.append(di)
+        else:
+            return
         version_hash_fields = {
             "pub_date": publication_date,
             "pub_pin": rows.css("span#MainContent_PubForm_PIN::text").get(),

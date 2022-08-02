@@ -38,10 +38,11 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase], specific_congress: int) -> None:
     crawler = (
-        LegislationCrawler(specific_congress = specific_congress)
-        if not fake_run
-        else FakeLegislationCrawler()
+        FakeLegislationCrawler()
+        if fake_run
+        else LegislationCrawler(specific_congress=specific_congress)
     )
+
 
     results = (
         crawler.iter_output_json()

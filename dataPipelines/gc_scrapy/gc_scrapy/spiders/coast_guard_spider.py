@@ -45,7 +45,7 @@ class CoastGuardSpider(GCSeleniumSpider):
                 driver, css_selector=self.current_page_selector)
 
             has_next_page = True
-            while(has_next_page):
+            while has_next_page:
                 try:
                     el = driver.find_element_by_css_selector(
                         self.next_page_selector)
@@ -54,9 +54,7 @@ class CoastGuardSpider(GCSeleniumSpider):
                     # expected when on last page, set exit condition then parse table
                     has_next_page = False
 
-                for item in self.parse_table(driver):
-                    yield item
-
+                yield from self.parse_table(driver)
                 if has_next_page:
                     el.click()
                     self.wait_until_css_clickable(

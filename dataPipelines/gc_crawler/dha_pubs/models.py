@@ -21,8 +21,7 @@ class DHAPager(Pager):
 
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
-        base_url = 'https://health.mil/About-MHS/OASDHA/Defense-Health-Agency/Resources-and-Management/DHA-Publications'
-        yield base_url
+        yield 'https://health.mil/About-MHS/OASDHA/Defense-Health-Agency/Resources-and-Management/DHA-Publications'
 
 
 class DHAParser(Parser):
@@ -53,9 +52,7 @@ class DHAParser(Parser):
                 pdf_di = DownloadableItem(doc_type='pdf',
                                           web_url=pdf_url)
                 pdf_dis.append(pdf_di)
-            for date in date_col:
-                dates.append(date.text)
-
+            dates.extend(date.text for date in date_col)
         doc_nums = []
         doc_titles = []
         doc_names = []
@@ -78,7 +75,7 @@ class DHAParser(Parser):
                 tmptitle = doc_data[1][1:].replace("\u201cClinical","Clinical").replace("System,\u201d","System").replace("BUILDER\u2122 ", "Builder").replace("\u2013","")
 
                 if "Volume" in tmptitle:
-                    doc_nums.append(doc_data[0][7:]+" Volume "+tmptitle.split()[-1])
+                    doc_nums.append(f"{doc_data[0][7:]} Volume {tmptitle.split()[-1]}")
                 else:
                     doc_nums.append(doc_data[0][7:])
                 doc_titles.append(doc_data[1][1:].replace("\u201cClinical","Clinical").replace("System,\u201d","System").replace("BUILDER\u2122 ", "Builder").replace("\u2013",""))

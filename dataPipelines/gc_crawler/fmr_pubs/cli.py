@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        FMRCrawler()
-        if not fake_run
-        else FakeFMRCrawler()
-    )
+    crawler = FakeFMRCrawler() if fake_run else FMRCrawler()
 
     results = (
         crawler.iter_output_json()

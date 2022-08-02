@@ -90,11 +90,15 @@ class DoDSpider(GCSpider):
                         doc_num = re.search(r'\d{2}.\d{3}', data)[0]
                     elif page_url.endswith('140025/'):
                         issuance_num = data.split()
-                        doc_name = 'DoDI 1400.25 Volume ' + issuance_num[0] if issuance_num[0] != 'DoDI' \
+                        doc_name = (
+                            f'DoDI 1400.25 Volume {issuance_num[0]}'
+                            if issuance_num[0] != 'DoDI'
                             else ' '.join(issuance_num).strip()
+                        )
+
 
                         doc_num = issuance_num[0] if issuance_num[0] != 'DoDI' \
-                            else issuance_num[-1]
+                                else issuance_num[-1]
                     else:
                         doc_name = data
                         doc_num = data.split(' ')[1] if data.find(
@@ -105,15 +109,17 @@ class DoDSpider(GCSpider):
                 elif idx == 2:
                     doc_title = data
                 elif idx == 3:
-                    doc_name = doc_name + ' ' + data if data != '' else doc_name
+                    doc_name = f'{doc_name} {data}' if data != '' else doc_name
                 elif idx == 4:
                     chapter_date = data
                 elif idx == 5:
                     exp_date = data
 
                 # set boolean if CAC is required to view document
-                cac_login_required = True if any(x in pdf_url for x in cac_required) \
-                    or any(x in doc_title for x in cac_required) else False
+                cac_login_required = any(
+                    x in pdf_url for x in cac_required
+                ) or any(x in doc_title for x in cac_required)
+
 
             # all fields that will be used for versioning
             version_hash_fields = {

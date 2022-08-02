@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        ICCrawler()
-        if not fake_run
-        else FakeICCrawler()
-    )
+    crawler = FakeICCrawler() if fake_run else ICCrawler()
 
     results = (
         crawler.iter_output_json()

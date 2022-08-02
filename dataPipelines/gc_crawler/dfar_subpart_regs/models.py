@@ -19,8 +19,7 @@ class DFarSubpartPager(Pager):
 
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
-        base_url = 'https://www.acquisition.gov/dfars'
-        yield base_url
+        yield 'https://www.acquisition.gov/dfars'
 
 
 class DFarSubpartParser(Parser):
@@ -60,14 +59,14 @@ class DFarSubpartParser(Parser):
             doc_title = row.find_all('td')[0].text.strip().replace(
                 '\u2014', ' ').replace('\u2013 ', ' ')
 
-            if doc_title[0:8].lower() == 'appendix':
+            if doc_title[:8].lower() == 'appendix':
                 break
             if count > 0 and doc_title == 'Defense Federal Acquisition Regulation':
                 continue
 
-            doc_num = doc_title.split()[0] + ' ' + doc_title.split()[1]
+            doc_num = f'{doc_title.split()[0]} {doc_title.split()[1]}'
             pdf_url = 'https://www.acquisition.gov' + \
-                row.find_all('td')[3].find('a')['src']
+                    row.find_all('td')[3].find('a')['src']
             pdf_di = DownloadableItem(
                 doc_type='xhtml',
                 web_url=pdf_url
@@ -80,7 +79,7 @@ class DFarSubpartParser(Parser):
             }
             doc_type = 'DFAR'
             doc = Document(
-                doc_name=doc_type + " " + doc_num,
+                doc_name=f"{doc_type} {doc_num}",
                 doc_title=doc_title,
                 doc_num=doc_num,
                 doc_type=doc_type,
@@ -89,8 +88,9 @@ class DFarSubpartParser(Parser):
                 crawler_used="dfar_subpart_regs",
                 source_page_url=page_url.strip(),
                 version_hash_raw_data=version_hash_fields,
-                downloadable_items=[pdf_di]
+                downloadable_items=[pdf_di],
             )
+
             parsed_docs.append(doc)
             count += 1
         return parsed_docs

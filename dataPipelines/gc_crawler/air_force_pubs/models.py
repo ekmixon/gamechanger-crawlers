@@ -38,11 +38,8 @@ class AFPager(Pager):
             ec.element_to_be_clickable((By.XPATH, '//*[@id="data_paginate"]/span/span/following-sibling::a')))
         last_page = int(last_page_button.text.strip())
 
-        # init page tracker
-        next_page_num = 1
-
         # loop through pages until the last
-        while next_page_num <= last_page:
+        for next_page_num in range(1, last_page + 1):
 
             if next_page_num != 1:
                 # extract the next link
@@ -51,12 +48,8 @@ class AFPager(Pager):
                 ActionChains(driver).move_to_element(next_page).perform()
                 next_page.click()
 
-            # increase next page tracker
-            next_page_num += 1
-
-            html_list = []
             html = driver.execute_script('return document.documentElement.outerHTML')
-            html_list.append((driver.current_url, html))
+            html_list = [(driver.current_url, html)]
             yield html_list[-1]
 
 
@@ -151,9 +144,12 @@ class AFParser(Parser):
             last_action = squash_spaces.sub(' ', cells[4].text).strip()
 
             # set boolean if CAC is required to view document
-            cac_login_required = True if any(x in pdf_url for x in cac_required) \
-                                         or any(x in doc_title for x in cac_required) \
-                                         or '-S' in prod_num else False
+            cac_login_required = (
+                any(x in pdf_url for x in cac_required)
+                or any(x in doc_title for x in cac_required)
+                or '-S' in prod_num
+            )
+
 
             # all fields that will be used for versioning
             version_hash_fields = {

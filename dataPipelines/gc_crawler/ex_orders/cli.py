@@ -18,7 +18,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = ExOrderCrawler() if not fake_run else FakeExOrderCrawler()
+    crawler = FakeExOrderCrawler() if fake_run else ExOrderCrawler()
 
     results = (
         crawler.iter_output_json()

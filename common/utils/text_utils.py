@@ -65,10 +65,7 @@ def drop_underscores_around_words(_s: str) -> str:
 
 def trim_string(_s: str, length: int) -> str:
     """Shortens string to 100 characters or less"""
-    if len(_s) <= length:
-        return _s
-    else:
-        return " ".join(_s[:length + 1].split(" ")[:-1])
+    return _s if len(_s) <= length else " ".join(_s[:length + 1].split(" ")[:-1])
 
 
 def size_fmt(num: float, suffix='B') -> str:

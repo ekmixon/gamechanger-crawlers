@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        DoDCrawler()
-        if not fake_run
-        else FakeDoDCrawler()
-    )
+    crawler = FakeDoDCrawler() if fake_run else DoDCrawler()
 
     results = (
         crawler.iter_output_json()

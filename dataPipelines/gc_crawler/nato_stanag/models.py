@@ -24,8 +24,6 @@ class STANAGPager(Pager):
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
         base_url = 'https://nso.nato.int/nso/nsdd/'
-        starting_url = base_url + 'ListPromulg.html'
-
         global driver
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
@@ -35,7 +33,7 @@ class STANAGPager(Pager):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-setuid-sandbox")
         driver = webdriver.Chrome(options=options)
-        yield starting_url
+        yield f'{base_url}ListPromulg.html'
 
 
 class STANAGParser(Parser):
@@ -72,18 +70,18 @@ class STANAGParser(Parser):
                     doc_type = doc_.split('-',1)[0].strip().replace(" ","_")
                     if len(doc_helper.split())>1:
                         if re.match("^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", doc_helper.split()[1].strip()):
-                            doc_num = doc_num + "_VOL" + doc_helper.split()[1].strip()
+                            doc_num = f"{doc_num}_VOL{doc_helper.split()[1].strip()}"
                         if re.match("^\d$",doc_helper.split()[1].strip()):
-                            doc_num = doc_num + "_PART" + doc_helper.split()[1].strip()
+                            doc_num = f"{doc_num}_PART{doc_helper.split()[1].strip()}"
 
                 if len(data[2].text.split("VOL")) > 1:
                     volume = data[2].text.split("VOL")[1].split()[0].strip()
-                    doc_num = doc_num + "_VOL" + volume
+                    doc_num = f"{doc_num}_VOL{volume}"
 
                 if len(data[2].text.split("PART")) > 1:
                     volume = data[2].text.split("PART")[1].split()[0].strip()
-                    doc_num = doc_num + "_PART" + volume
-                doc_name = doc_type + " " + doc_num
+                    doc_num = f"{doc_num}_PART{volume}"
+                doc_name = f"{doc_type} {doc_num}"
                 if doc_name in (o.doc_name for o in parsed_docs) and doc_title in (t.doc_title for t in parsed_docs):
                     #getting rid of duplicates
                     continue
@@ -97,11 +95,7 @@ class STANAGParser(Parser):
                 pdf_suffix = data[4].find('a')
                 if pdf_suffix is None:
                     continue
-                if "../classDoc.htm" in pdf_suffix['href']:
-                    cac_login_required = True
-                else:
-                    cac_login_required = False
-
+                cac_login_required = "../classDoc.htm" in pdf_suffix['href']
                 di = DownloadableItem(
                     doc_type='pdf',
                     web_url=pdf_prefix + pdf_suffix['href'].replace('../', '').replace(" ", "%20")

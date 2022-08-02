@@ -16,11 +16,11 @@ class BrickSetSpider(scrapy.Spider):
 
     def parse(self, response):
         SET_SELECTOR = 'li'
+        NAME_SELECTOR = 'a ::text'
+        URL_SELECTOR = 'a::attr(href)'
+        TITLE_SELECTOR = 'ul li::text'
         for brickset in response.css(SET_SELECTOR):
 
-            NAME_SELECTOR = 'a ::text'
-            URL_SELECTOR = 'a::attr(href)'
-            TITLE_SELECTOR = 'ul li::text'
             doc_name = brickset.css(NAME_SELECTOR).extract_first()
             url = brickset.css(URL_SELECTOR).extract_first()
             doc_title = brickset.css(TITLE_SELECTOR).extract_first()
@@ -31,12 +31,11 @@ class BrickSetSpider(scrapy.Spider):
             if url is None:
                 continue
             if "SFFAS" not in str(doc_name) and "SFFAC" not in str(doc_name):
-                doc_name = "FASAB " + str(doc_name)
+                doc_name = f"FASAB {str(doc_name)}"
             doc_num = doc_name.rsplit(' ', 1)[-1]
             doc_type = doc_name.rsplit(' ', 1)[0]
-            cac_login_required = False
             if not url.startswith("http"):
-                url = "https:" + url
+                url = f"https:{url}"
             downloadable_items = [
                 {
                     "doc_type": 'pdf',
@@ -50,6 +49,7 @@ class BrickSetSpider(scrapy.Spider):
                 "doc_name": doc_name,
             }
 
+            cac_login_required = False
             yield DocItem(
                 doc_name=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_name),
                 doc_title=re.sub(r'[^a-zA-Z0-9 ()\\-]', '', doc_title),

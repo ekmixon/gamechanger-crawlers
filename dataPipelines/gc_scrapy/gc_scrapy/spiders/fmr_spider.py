@@ -35,7 +35,7 @@ class FmrSpider(GCSpider):
             section_type, _, ch_num = section_num_raw.rpartition(' ')
 
             if section_type not in ('Chapter', 'Appendix'):
-                ch_num = ch_num[0:3]
+                ch_num = ch_num[:3]
 
             doc_title_raw = "".join(
                 row.css('td:nth-child(2) *::text').getall())

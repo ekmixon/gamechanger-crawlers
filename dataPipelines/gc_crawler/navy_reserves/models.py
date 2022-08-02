@@ -39,14 +39,14 @@ def extract_elements(table, type_prefix, base_url, driver):
         else:
             type_suffix = "NOTE"
         doc_type = type_prefix + type_suffix
-        doc_name = doc_type + " " + doc_num
+        doc_name = f"{doc_type} {doc_num}"
         if re.search(r'\(\d\)', doc_title):
             doc_name_suffix = re.split('\(', doc_title)
             doc_name_suffix = re.split('\)', doc_name_suffix[1])
             if doc_name_suffix[0].strip() != "":
-                doc_name = doc_name + '_' + doc_name_suffix[0]
+                doc_name = f'{doc_name}_{doc_name_suffix[0]}'
             if len(doc_name_suffix) > 1 and doc_name_suffix[1].strip() != "":
-                doc_name = doc_name + '_' + doc_name_suffix[1].strip().replace(" ","_")
+                doc_name = f'{doc_name}_' + doc_name_suffix[1].strip().replace(" ","_")
         publication_date = "N/A"
         cac_login_required = False
 
@@ -156,8 +156,9 @@ class NavyReservesCrawler(Crawler):
 class FakeNavyReservesCrawler(Crawler):
     """Navy Reserves crawler that just uses stubs and local source files"""
     def __init__(self, *args, **kwargs):
-        with open(os.path.join(SOURCE_SAMPLE_DIR, 'navy_reserves.html')) as f:
-            default_text = f.read()
+        default_text = Path(
+            os.path.join(SOURCE_SAMPLE_DIR, 'navy_reserves.html')
+        ).read_text()
 
         super().__init__(
             *args,

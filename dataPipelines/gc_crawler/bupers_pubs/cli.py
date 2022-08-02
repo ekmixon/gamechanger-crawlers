@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        BupersCrawler()
-        if not fake_run
-        else FakeBupersCrawler()
-    )
+    crawler = FakeBupersCrawler() if fake_run else BupersCrawler()
 
     results = (
         crawler.iter_output_json()

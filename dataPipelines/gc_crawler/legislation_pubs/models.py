@@ -35,8 +35,8 @@ class LegislationPager(Pager):
         base_url = self.base_url
 
         title_list = []
-                    
-        level1 = '/bills/'+str(self.specific_congress)
+
+        level1 = f'/bills/{str(self.specific_congress)}'
 
         level2_list = []
 
@@ -52,7 +52,7 @@ class LegislationPager(Pager):
             first_html = driver.execute_script("return document.documentElement.outerHTML")
             soup = bs4.BeautifulSoup(first_html, features="html.parser")
             level3_list = [x.get('data-href') for x in soup.find_all(class_='panel-heading BILLSlevel3style closed')]
-            
+
             for level3 in level3_list:
                 driver.get(base_url+level3)
                 WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@class='panel-heading BILLSlevel3style closed']")))
@@ -73,7 +73,6 @@ class LegislationParser(Parser):
         base_url = BASE_SOURCE_URL_CRAWLER
 
         incoming_url = page_url
-        parsed_docs = []
         try:
             driver.get(incoming_url)
             WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@class='fw-tab-content']")))
@@ -84,7 +83,7 @@ class LegislationParser(Parser):
                     WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@class='fw-tab-content']")))
                 except TimeoutException:
                     return []
-        
+
         time.sleep(.5)
         medium_delay = 3
         try:
@@ -114,8 +113,7 @@ class LegislationParser(Parser):
         sponsor = ""
 
         for item in detail_area:
-            span = item.find('span')
-            if span:
+            if span := item.find('span'):
                 if "Last Action Date Listed" in span.text:
                     date = item.find('p').text
                 elif "Full Title" in span.text:
@@ -134,16 +132,11 @@ class LegislationParser(Parser):
         bill_version_short = bill_version[bill_version.find("(")+1:bill_version.find(")")]
         doc_num = bill_num
         doc_type = bill_type
-        doc_name = doc_type + " " + doc_num + " " + bill_version_short + " " + congress
+        doc_name = f"{doc_type} {doc_num} {bill_version_short} {congress}"
         publication_date = date
         cac_login_required = False
-        downloadable_items = []
-
-        pdf_di = DownloadableItem(
-            doc_type='pdf',
-            web_url= "https://" + pdf_url
-            )
-        downloadable_items.append(pdf_di)
+        pdf_di = DownloadableItem(doc_type='pdf', web_url=f"https://{pdf_url}")
+        downloadable_items = [pdf_di]
         version_hash_fields = {
             "pub_date": date,
             "bill_version": bill_version,
@@ -163,9 +156,7 @@ class LegislationParser(Parser):
             downloadable_items=downloadable_items
         )
 
-        parsed_docs.append(doc)
-
-        return parsed_docs
+        return [doc]
 
 
 class LegislationCrawler(Crawler):
@@ -183,8 +174,9 @@ class LegislationCrawler(Crawler):
 class FakeLegislationCrawler(Crawler):
     """Legislation Publication crawler that just uses stubs and local source files"""
     def __init__(self, *args, **kwargs):
-        with open(os.path.join(SOURCE_SAMPLE_DIR, 'army_pubs.html')) as f:
-            default_text = f.read()
+        default_text = Path(
+            os.path.join(SOURCE_SAMPLE_DIR, 'army_pubs.html')
+        ).read_text()
 
         super().__init__(
             *args,

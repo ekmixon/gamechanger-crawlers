@@ -21,8 +21,7 @@ class FarSubpartPager(Pager):
 
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
-        base_url = 'https://www.acquisition.gov/far'
-        yield base_url
+        yield 'https://www.acquisition.gov/far'
 
 
 class FarSubpartParser(Parser):
@@ -60,7 +59,7 @@ class FarSubpartParser(Parser):
             doc_type = ''
             if count > 0:
                 doc_title = row.find_all('td')[0].text.strip().replace('\u2014',' ').replace('\u2013 ', ' ')
-                doc_num = doc_title.split()[0] + ' ' + doc_title.split()[1]
+                doc_num = f'{doc_title.split()[0]} {doc_title.split()[1]}'
                 pdf_url = 'https://www.acquisition.gov' + row.find_all('td')[3].find('a')['src']
                 pdf_di = DownloadableItem(
                     doc_type='html',
@@ -73,7 +72,7 @@ class FarSubpartParser(Parser):
                 }
                 doc_type = 'FAR'
                 doc = Document(
-                    doc_name=doc_type + " " + doc_num,
+                    doc_name=f"{doc_type} {doc_num}",
                     doc_title=doc_title,
                     doc_num=doc_num,
                     doc_type=doc_type,
@@ -82,8 +81,9 @@ class FarSubpartParser(Parser):
                     crawler_used="far_subpart_regs",
                     source_page_url=page_url.strip(),
                     version_hash_raw_data=version_hash_fields,
-                    downloadable_items=[pdf_di]
+                    downloadable_items=[pdf_di],
                 )
+
                 parsed_docs.append(doc)
             count+=1
         return parsed_docs

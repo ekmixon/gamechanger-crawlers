@@ -35,12 +35,9 @@ class SECNAVPager(Pager):
 
         # extract links
         for link in issuance_list[:2]:
-            if not link['href'].startswith('http'):
-                url = base_url + link['href']
-            else:
-                url = link['href']
-
-            yield url
+            yield link['href'] if link['href'].startswith(
+                'http'
+            ) else base_url + link['href']
 
 
 class SECNAVParser(Parser):
@@ -65,14 +62,14 @@ class SECNAVParser(Parser):
             driver.get(page_url)
             WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.XPATH, "//*[@class='dynamic']")))
         except TimeoutException as e:
-            print("Error: " + e)
+            print(f"Error: {e}")
             print("Trying again...")
             try:
                 driver.get(page_url)
                 WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.XPATH, "//*[@class='dynamic']")))
             except TimeoutException as e:
-                print("Error: " + e)
-                print(page_url + "cannot be scrapped.")
+                print(f"Error: {e}")
+                print(f"{page_url}cannot be scrapped.")
                 return parsed_docs
         while True:
             while last_page == driver.current_url:
@@ -119,19 +116,18 @@ class SECNAVParser(Parser):
                 )
                 parsed_docs.append(doc)
 
-            if (soup.find('td', attrs={'id': 'pagingWPQ3next'}) != None):
-                try:
-                    next_button = WebDriverWait(driver, 20).until(
-                        ec.presence_of_element_located((By.XPATH, "//*[@id='pagingWPQ3next']")))
-                    ActionChains(driver).move_to_element(next_button).perform()
-                    next_button.click()
-                except WebDriverException as e:
-                    print("Error: " + e)
-                    print("Cannot go to the next page.")
-                    break
-            else:
+            if soup.find('td', attrs={'id': 'pagingWPQ3next'}) is None:
                 break
 
+            try:
+                next_button = WebDriverWait(driver, 20).until(
+                    ec.presence_of_element_located((By.XPATH, "//*[@id='pagingWPQ3next']")))
+                ActionChains(driver).move_to_element(next_button).perform()
+                next_button.click()
+            except WebDriverException as e:
+                print(f"Error: {e}")
+                print("Cannot go to the next page.")
+                break
         return parsed_docs
 
 

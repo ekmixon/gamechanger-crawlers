@@ -30,13 +30,13 @@ class SecNavSpider(GCSeleniumSpider):
     def parse(self, response):
         driver: Chrome = response.meta["driver"]
         hrefs = [
-            link.get_attribute('href') for link in driver.find_elements_by_css_selector('a.dynamic')[0:2]
+            link.get_attribute('href')
+            for link in driver.find_elements_by_css_selector('a.dynamic')[:2]
         ]
 
-        for href in hrefs:
-            for item in self.parse_table_page(href, driver):
-                yield item
 
+        for href in hrefs:
+            yield from self.parse_table_page(href, driver)
             sleep(5)
 
     def parse_table_page(self, href: str, driver: Chrome):
@@ -45,7 +45,7 @@ class SecNavSpider(GCSeleniumSpider):
         self.wait_until_css_located(driver, self.table_selector, wait=20)
 
         has_next_page = True
-        while(has_next_page):
+        while has_next_page:
             try:
                 el = driver.find_element_by_css_selector(
                     'td#pagingWPQ3next > a')
@@ -55,9 +55,7 @@ class SecNavSpider(GCSeleniumSpider):
                 has_next_page = False
 
             try:
-                for item in self.parse_table(driver):
-                    yield item
-
+                yield from self.parse_table(driver)
             except NoSuchElementException:
                 raise NoSuchElementException(
                     f"Failed to find table to scrape from using css selector: {self.table_selector}"

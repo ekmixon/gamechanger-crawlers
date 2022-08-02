@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        STANAGCrawler()
-        if not fake_run
-        else FakeSTANAGCrawler()
-    )
+    crawler = FakeSTANAGCrawler() if fake_run else STANAGCrawler()
 
     results = (
         crawler.iter_output_json()

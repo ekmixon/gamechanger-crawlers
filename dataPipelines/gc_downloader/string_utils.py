@@ -76,11 +76,10 @@ def transform_string(
     :returns: transformed string
     """
 
-    processed_string = str_chain_apply(
-        input_str=input_string, ordered_transformers=ordered_string_transformers
+    return str_chain_apply(
+        input_str=input_string,
+        ordered_transformers=ordered_string_transformers,
     )
-
-    return processed_string
 
 
 def normalize_string(input_string: str) -> str:

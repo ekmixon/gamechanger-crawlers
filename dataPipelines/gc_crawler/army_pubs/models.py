@@ -15,13 +15,7 @@ from dataPipelines.gc_crawler.utils import abs_url, close_driver_windows_and_qui
 from . import SOURCE_SAMPLE_DIR, BASE_SOURCE_URL, driver
 
 def is_cac_required(dist_stm: str):
-    if dist_stm.startswith("A") or dist_stm.startswith("N"):
-        # the distribution statement is distribution A or says Not Applicable so anyone can access the information
-        return False
-    else:
-        # the distribution statement has more restrictions
-
-        return True
+    return not dist_stm.startswith("A") and not dist_stm.startswith("N")
 
 
 class ArmyPager(Pager):
@@ -45,7 +39,7 @@ class ArmyPager(Pager):
 
         publications_list = soup.find_all('li', attrs={'class': 'nav-item'})[2]
         # extract links
-        links = [link for link in publications_list.find_all('a', attrs={"class": "dropdown-item"})]
+        links = list(publications_list.find_all('a', attrs={"class": "dropdown-item"}))
 
         # these links are not in the proper format to be scraped
         do_not_process = ["/ProductMaps/PubForm/PB.aspx", "/Publications/Administrative/POG/AllPogs.aspx"]
@@ -55,10 +49,12 @@ class ArmyPager(Pager):
         for link in links[:-6]:
             if link['href'] == "#" or link['href'] in do_not_process:
                 continue
-            if not link['href'].startswith('http'):
-                url = self.starting_url + link['href']
-            else:
-                url = link['href']
+            url = (
+                link['href']
+                if link['href'].startswith('http')
+                else self.starting_url + link['href']
+            )
+
             driver.get(url)
             WebDriverWait(driver, 5).until(
                 ec.presence_of_element_located((By.XPATH, "//*[@id='navbarDropdownMenuLink']")))
@@ -78,7 +74,7 @@ class ArmyParser(Parser):
 
         """Iterator for page links"""
         base_url = 'https://armypubs.army.mil'
-        pub_url = base_url + '/ProductMaps/PubForm/'
+        pub_url = f'{base_url}/ProductMaps/PubForm/'
         soup = bs4.BeautifulSoup(page_text, features="html.parser")
         table = soup.find('table', attrs={'class': 'gridview'})
         pub_links = table.find_all('a')
@@ -116,14 +112,13 @@ class ArmyParser(Parser):
             if not linked_items:
                 # skip over the publication
                 continue
-            else:
-                for item in linked_items:
-                    if "PDF" in item.text and Path(rows[3].find_all('td')[1].find('a')['href']).suffix == ".pdf":
-                        pdf_di = DownloadableItem(
-                            doc_type='pdf',
-                            web_url=abs_url(base_url, rows[3].find_all('td')[1].find('a')['href']).replace(' ', '%20')
-                         )
-                        downloadable_items.append(pdf_di)
+            for item in linked_items:
+                if "PDF" in item.text and Path(rows[3].find_all('td')[1].find('a')['href']).suffix == ".pdf":
+                    pdf_di = DownloadableItem(
+                        doc_type='pdf',
+                        web_url=abs_url(base_url, rows[3].find_all('td')[1].find('a')['href']).replace(' ', '%20')
+                     )
+                    downloadable_items.append(pdf_di)
             if not downloadable_items:
                 continue
             version_hash_fields = {
@@ -167,8 +162,9 @@ class ArmyCrawler(Crawler):
 class FakeArmyCrawler(Crawler):
     """Army Publication crawler that just uses stubs and local source files"""
     def __init__(self, *args, **kwargs):
-        with open(os.path.join(SOURCE_SAMPLE_DIR, 'army_pubs.html')) as f:
-            default_text = f.read()
+        default_text = Path(
+            os.path.join(SOURCE_SAMPLE_DIR, 'army_pubs.html')
+        ).read_text()
 
         super().__init__(
             *args,

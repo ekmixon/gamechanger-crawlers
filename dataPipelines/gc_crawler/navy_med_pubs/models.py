@@ -21,21 +21,19 @@ class NavyMedPager(Pager):
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
         base_url = 'https://www.med.navy.mil'
-        r = requests.get(self.starting_url, verify=CERTIFICATE_DIR + '/cat3.pem')
+        r = requests.get(self.starting_url, verify=f'{CERTIFICATE_DIR}/cat3.pem')
         soup = bs4.BeautifulSoup(r.content, features="html.parser")
 
         # get target column of list items
         issuance_list = soup.find('div', attrs={'class': 'noindex ms-wpContentDivSpace'})
         matches = ["Publications", "BUMEDNotes", "BUMEDInstructions"]
         # extract links
-        links = [link for link in issuance_list.find_all('a')]
+        links = list(issuance_list.find_all('a'))
         for link in links[2:-1]:
             if any(x in str(link) for x in matches):
-                if not link['href'].startswith('http'):
-                    url = base_url + link['href']
-                else:
-                    url = link['href']
-                yield url
+                yield link['href'] if link['href'].startswith(
+                    'http'
+                ) else base_url + link['href']
 
 
 def remove_html_tags(text):

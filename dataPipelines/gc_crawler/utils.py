@@ -15,10 +15,10 @@ import re
 
 def str_to_sha256_hex_digest(_str: str) -> str:
     """Converts string to sha256 hex digest"""
-    if not _str and not isinstance(_str, str):
+    if _str or isinstance(_str, str):
+        return sha256(_str.encode("utf-8")).hexdigest()
+    else:
         raise ValueError("Arg should be a non-empty string")
-
-    return sha256(_str.encode("utf-8")).hexdigest()
 
 
 def dict_to_sha256_hex_digest(_dict: Dict[Any, Any]) -> str:

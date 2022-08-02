@@ -20,7 +20,7 @@ class ExamplePager(Pager):
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
         for sample_file in 'page_1.html', 'page_2.html':
-            yield self.starting_url + "/" + sample_file
+            yield f"{self.starting_url}/{sample_file}"
 
 
 class ExampleParser(Parser):
@@ -61,10 +61,11 @@ class ExampleParser(Parser):
                 )
 
                 actual_download_file_type = (
-                    actual_download_file_type_matcher.group(1)
+                    actual_download_file_type_matcher[1]
                     if actual_download_file_type_matcher
                     else None
                 )
+
 
                 download_items.append(
                     DownloadableItem(

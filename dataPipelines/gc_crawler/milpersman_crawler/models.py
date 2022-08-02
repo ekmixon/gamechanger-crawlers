@@ -37,10 +37,7 @@ class MilpersPager(Pager):
         soup = bs4.BeautifulSoup(r.content, features="html.parser")
         meta2 = soup.find(id='LiveHTMLWrapper34769').find_all('a')
         links2 = ['https://www.mynavyhr.navy.mil' + item['href'] for item in meta2]  # weird, ugly formatting
-        links = links2 + links[1:-1]
-
-        for link in links:
-            yield link
+        yield from links2 + links[1:-1]
 
 class MilpersParser(Parser):
     """Parser for Milpers Issuance crawler"""
@@ -51,7 +48,7 @@ class MilpersParser(Parser):
         soup = bs4.BeautifulSoup(r.content, features="html.parser")
 
         name = soup.find(id='dnn_CenterPane_Top').find('a')['name']
-        pdf_url = soup.find(id='LiveHTMLWrapper' + name).find_all('a')
+        pdf_url = soup.find(id=f'LiveHTMLWrapper{name}').find_all('a')
         pdf_url = [("https://www.mynavyhr.navy.mil" + item['href']).replace(' ', '%20') for item in pdf_url]
 
         new_url = []
@@ -64,7 +61,10 @@ class MilpersParser(Parser):
                 break
         pdf_url = new_url
 
-        l = soup.find(id='LiveHTMLWrapper' + name).find_all(attrs={'style': 'font-size: 12px;'})
+        l = soup.find(id=f'LiveHTMLWrapper{name}').find_all(
+            attrs={'style': 'font-size: 12px;'}
+        )
+
 
         # the main loop to get nums, the document numbers, and titles, the titles of the docs
         nums = []
@@ -75,13 +75,9 @@ class MilpersParser(Parser):
 
                 # special case in the 1000 docs, one doc has an "Exhibit" document that goes with it.
                 if "Exhibit" in val.text:
-                    nums.append(nums[-1] + "Exhibit")
+                    nums.append(f"{nums[-1]}Exhibit")
                     titles.append(val.text)
 
-                # checking the 1900s documents for special cases. checking because it's broken html
-                # whose doc nums/titles needs to be hard-coded in. check this in case anything breaks in the future
-                # NOTE: 1000-160, 1320-170, and 1600-090, 1200-070 all lead to the incorrect PDF on the website. This might
-                # get corrected in the future, in which case we'll remove some of these lines that exclude documents
                 elif int(val.text.replace('\xa0', '').replace('-', '').replace('\u200b', '').split()[0]) == 1910153:
                     pass
                 elif int(val.text.replace('\xa0', '').replace('-', '').replace('\u200b', '').split()[0]) == 1000160:
@@ -97,11 +93,9 @@ class MilpersParser(Parser):
                 elif int(val.text.replace('\xa0', '').replace('-', '').replace('\u200b', '').split()[0]) == 10412:
                     nums.append('1910-412')
                     titles.append(l[index + 1].text)
-                    pass
                 elif int(val.text.replace('\xa0', '').replace('-', '').replace('\u200b', '').split()[0]) == 1916:
                     pass
 
-                # now that the special cases are checked, for everything else:
                 elif int(val.text.replace('\xa0', '').replace('-', '').replace('\u200b', '').split()[0]) or (
                         "Exhibit" in val.text.replace('-', '')):
                     # checking to make sure the document isn't cancelled. if it is, then we skip it. else, append
@@ -116,20 +110,18 @@ class MilpersParser(Parser):
         for i in range(len(titles)):
             titles[i] = titles[i].replace('\n  ', '').replace('\xa0', ' ')
 
-        if len(titles) == len(pdf_url) == len(nums):
-            pass
-        else:
+        if not len(titles) == len(pdf_url) == len(nums):
             raise Exception(f"Incorrect iteration in {page_url}")
 
         # the final document retrieval
         parsed_docs = []
+        dtype = "MILPERSMAN"
+        cac_login_required = False
+        publication_date = "N/A"
         for i in range(len(pdf_url)):
-            dtype = "MILPERSMAN"
             dnum = nums[i]
             dtitle = titles[i].replace('\u200b', '').replace('\u2013 ', '').replace('\u2013', '').replace('\u2019', '').replace('\n', '').replace('\u201c', '').replace('\u201d', '')
-            dname = dtype + " " + dnum
-            cac_login_required = False
-            publication_date = "N/A"
+            dname = f"{dtype} {dnum}"
             url = pdf_url[i]
             pdf_di = DownloadableItem(doc_type='pdf', web_url=url)
             version_hash_fields = {

@@ -13,10 +13,8 @@ def general_set_num(raw_data: dict) -> None:
     doc_num = ""
     try:
         doc_type_num_raw = raw_data.get('doc_type_num_raw')
-        doc_name_groups = re.search(general_num_re, doc_type_num_raw)
-
-        if doc_name_groups:
-            doc_num = doc_name_groups.group(1)
+        if doc_name_groups := re.search(general_num_re, doc_type_num_raw):
+            doc_num = doc_name_groups[1]
     except:
         pass
     finally:
@@ -29,8 +27,7 @@ def set_no_num(raw_data: dict) -> None:
 
 def set_type_using_num(raw_data: dict) -> None:
     doc_type_num_raw = raw_data.get('doc_type_num_raw')
-    doc_num = raw_data.get('doc_num')
-    if doc_num:
+    if doc_num := raw_data.get('doc_num'):
         doc_type, *_ = doc_type_num_raw.partition(doc_num)
         raw_data['doc_type'] = doc_type.strip()
     else:
@@ -88,9 +85,8 @@ dcg_re = re.compile(r'DCG (VOL \d* PGS \d*\-\d*)')
 def legal_pubs_set_num(raw_data: dict) -> None:
     raw_data['doc_num'] = ""
     if 'DCG VOL' in raw_data['doc_type_num_raw']:
-        groups = re.search(dcg_re, raw_data['doc_type_num_raw'])
-        if groups:
-            raw_data['doc_num'] = groups.group(1)
+        if groups := re.search(dcg_re, raw_data['doc_type_num_raw']):
+            raw_data['doc_num'] = groups[1]
     elif 'MANUAL FOR COURTS-MARTIAL' in raw_data['doc_type_num_raw']:
         raw_data['doc_num'] = ""
     else:
@@ -111,9 +107,8 @@ def misc_pubs_set_num(raw_data: dict) -> None:
     doc_type_num_raw = raw_data['doc_type_num_raw']
     raw_data['doc_num'] = ""
     if 'IRM ' in doc_type_num_raw or 'IRM-' in doc_type_num_raw:
-        groups = re.search(irm_re, doc_type_num_raw)
-        if groups:
-            raw_data['doc_num'] = groups.group(1)
+        if groups := re.search(irm_re, doc_type_num_raw):
+            raw_data['doc_num'] = groups[1]
     elif 'MCCP' in doc_type_num_raw or 'CMC White Letter' in doc_type_num_raw:
         general_set_num(raw_data)
     else:
@@ -143,9 +138,8 @@ secnavm_re = re.compile(r'SECNAV M\-?(\w*\.?\w*)')
 def navy_pubs_set_num(raw_data: dict) -> None:
     raw_data['doc_num'] = ""
     if 'SECNAV M-' in raw_data['doc_type_num_raw']:
-        groups = re.search(secnavm_re, raw_data['doc_type_num_raw'])
-        if groups:
-            raw_data['doc_num'] = groups.group(1).replace('-', '')
+        if groups := re.search(secnavm_re, raw_data['doc_type_num_raw']):
+            raw_data['doc_num'] = groups[1].replace('-', '')
     else:
         general_set_num(raw_data)
 
@@ -264,7 +258,7 @@ class MarineCorpSpider(GCSpider):
                 if not doc_type_raw:
                     continue
                 # skip doc type we dont know about
-                if not doc_type_raw in doc_type_transformations_map:
+                if doc_type_raw not in doc_type_transformations_map:
                     print('SKIPPING - unrecognized doc type', doc_type_raw)
                     continue
                 # skip deleted
@@ -294,8 +288,10 @@ class MarineCorpSpider(GCSpider):
                 if not doc_title:
                     doc_title = doc_name
 
-                cac_login_required = True if any(
-                    x in doc_title for x in self.cac_required_options) else False
+                cac_login_required = any(
+                    (x in doc_title for x in self.cac_required_options)
+                )
+
 
                 incomplete_item = {
                     "item": DocItem(

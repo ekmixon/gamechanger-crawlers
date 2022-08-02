@@ -58,7 +58,7 @@ def process_dir(script_path: t.Union[str,Path], input_path: t.Union[str, Path], 
         nonlocal good
         nonlocal bad
         good += 1 if result else 0
-        bad += 1 if not result else 0
+        bad += 0 if result else 1
         print(f"[JOB INFO] PROGRESS:{good + bad}/{total_count}")
 
     with ProcessPoolExecutor(max_workers=cores) as pp:

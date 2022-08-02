@@ -52,7 +52,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
         anchor_after_current_selector = "div.dataTables_paginate.paging_simple_numbers a.paginate_button.current + a"
 
         has_next_page = True
-        while(has_next_page):
+        while has_next_page:
             try:
                 el = driver.find_element_by_css_selector(
                     anchor_after_current_selector)
@@ -62,9 +62,7 @@ class AirForcePubsSpider(GCSeleniumSpider):
                 has_next_page = False
 
             try:
-                for item in self.parse_table(driver):
-                    yield item
-
+                yield from self.parse_table(driver)
             except NoSuchElementException:
                 raise NoSuchElementException(
                     f"Failed to find table to scrape from using css selector: {self.table_selector}"
@@ -84,18 +82,12 @@ class AirForcePubsSpider(GCSeleniumSpider):
         row_selector = f'{self.table_selector} tbody tr '
 
         for row in webpage.css(row_selector):
-            product_number_raw = row.css(
-                f'td:nth-child(1) a::text').get(default='')
-            url_raw = row.css(
-                f'td:nth-child(1) a::attr(href)').get(default='')
-            title_raw = row.css(
-                f'td:nth-child(2) a::text').get(default='')
-            publish_date_raw = row.css(
-                f'td:nth-child(3) span::text').get(default='')
-            certification_date_raw = row.css(
-                f'td:nth-child(4) span::text').get(default='')
-            last_action_raw = row.css(
-                f'td:nth-child(5)::text').get(default='')
+            product_number_raw = row.css('td:nth-child(1) a::text').get(default='')
+            url_raw = row.css('td:nth-child(1) a::attr(href)').get(default='')
+            title_raw = row.css('td:nth-child(2) a::text').get(default='')
+            publish_date_raw = row.css('td:nth-child(3) span::text').get(default='')
+            certification_date_raw = row.css('td:nth-child(4) span::text').get(default='')
+            last_action_raw = row.css('td:nth-child(5)::text').get(default='')
 
             prod_num = squash_spaces.sub(" ", product_number_raw).strip()
 
@@ -157,9 +149,12 @@ class AirForcePubsSpider(GCSeleniumSpider):
             last_action = squash_spaces.sub(' ', last_action_raw).strip()
 
             # set boolean if CAC is required to view document
-            cac_login_required = True if any(x in url_raw for x in self.cac_required_options) \
-                or any(x in doc_title for x in self.cac_required_options) \
-                or '-S' in prod_num else False
+            cac_login_required = (
+                any(x in url_raw for x in self.cac_required_options)
+                or any(x in doc_title for x in self.cac_required_options)
+                or '-S' in prod_num
+            )
+
 
             # all fields that will be used for versioning
             version_hash_fields = {

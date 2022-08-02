@@ -208,22 +208,19 @@ class USCodeDownloadHandler(DefaultDownloadHandler):
             flags=re.IGNORECASE,
         )
 
-        filename_suffix = (
-                (chapters_matcher.group(1) if chapters_matcher else "")
-                + ("_" + sections_matcher.group(1) if sections_matcher else "")
+        filename_suffix = (chapters_matcher[1] if chapters_matcher else "") + (
+            "_" + sections_matcher[1] if sections_matcher else ""
         )
 
-        doc_base_name = ddoc.document.doc_type + " " + str(ddoc.document.doc_num)
+
+        doc_base_name = f"{ddoc.document.doc_type} {str(ddoc.document.doc_num)}"
         if ddoc.document.doc_title.lower() == 'appendix':
             doc_base_name += " - Appendix"
 
-        full_filename = (
-                normalize_string(doc_base_name)
-                + ((" - " + filename_suffix) if filename_suffix else "")
-                + file_extension
-        )
-
-        return full_filename
+        return (
+            normalize_string(doc_base_name)
+            + (f" - {filename_suffix}" if filename_suffix else "")
+        ) + file_extension
 
 
 class DriverDownloadHandler(DefaultDownloadHandler):
@@ -312,5 +309,4 @@ def process_all_docs(
             print(f"Processing document: {doc.doc_name}")
         handler = get_appropriate_file_handler(doc=doc, driver=driver)
 
-        for pdoc in handler.process_all_docs(docs=[doc], output_dir=output_dir):
-            yield pdoc
+        yield from handler.process_all_docs(docs=[doc], output_dir=output_dir)

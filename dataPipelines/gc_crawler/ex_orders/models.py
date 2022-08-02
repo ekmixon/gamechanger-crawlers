@@ -42,16 +42,10 @@ class ExOrderParser(Parser):
             # DOWNLOAD INFO
             if execOrder["pdf_url"]:
                 pdf_di = DownloadableItem(doc_type='pdf', web_url=execOrder["pdf_url"])
-            else:
-                pass
-
             if execOrder["full_text_xml_url"]:
                 xml_di = DownloadableItem(
                     doc_type='xml', web_url=execOrder["full_text_xml_url"]
                 )
-            else:
-                pass
-
             # derive EO Number from context
             if execOrder["executive_order_number"] is None:
                 execOrder["executive_order_number"] = str(int(parsed_docs[-1].doc_num) - 1)

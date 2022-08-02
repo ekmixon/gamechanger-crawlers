@@ -88,8 +88,10 @@ class JCSParser(Parser):
             pdf_url = row.td.a['href'].strip()
             doc_name = row.td.a.text.strip()
 
-            doc_num_matcher = re.match(r"(?P<doc_type>(\s*\w+)*?)\s+(?P<doc_num>([0-9]+[a-zA-Z0-9.-_]*)+)", doc_name)
-            if doc_num_matcher:
+            if doc_num_matcher := re.match(
+                r"(?P<doc_type>(\s*\w+)*?)\s+(?P<doc_num>([0-9]+[a-zA-Z0-9.-_]*)+)",
+                doc_name,
+            ):
                 doc_num = doc_num_matcher.groupdict()['doc_num']
             else:
                 doc_num = doc_name.split(' ')[-1]
@@ -103,8 +105,10 @@ class JCSParser(Parser):
             )
 
             # set boolean if CAC is required to view document
-            cac_login_required = True if any(x in pdf_url for x in cac_required) \
-                                              or any(x in doc_title for x in cac_required) else False
+            cac_login_required = any(x in pdf_url for x in cac_required) or any(
+                x in doc_title for x in cac_required
+            )
+
 
             # all fields that will be used for versioning
             version_hash_fields = {

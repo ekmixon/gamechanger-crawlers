@@ -30,8 +30,7 @@ class JcsPubsSpider(GCSpider):
         for row in rows:
             doc_type_num_raw = row.css('td.DocNoCol a::text').get()
 
-            doc_type_num_groups = doc_type_num_re.search(doc_type_num_raw)
-            if doc_type_num_groups:
+            if doc_type_num_groups := doc_type_num_re.search(doc_type_num_raw):
                 doc_type_raw = doc_type_num_groups.group(1)
                 doc_num_raw = doc_type_num_groups.group(2)
             else:
@@ -63,8 +62,10 @@ class JcsPubsSpider(GCSpider):
             doc_name = f"{doc_type} {doc_num}"
 
             # set boolean if CAC is required to view document
-            cac_login_required = True if any(x in href_raw for x in self.cac_required_options) \
-                or any(x in doc_title for x in self.cac_required_options) else False
+            cac_login_required = any(
+                x in href_raw for x in self.cac_required_options
+            ) or any(x in doc_title for x in self.cac_required_options)
+
 
             source_page_url = response.url
 

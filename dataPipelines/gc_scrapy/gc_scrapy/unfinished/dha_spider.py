@@ -49,7 +49,7 @@ class DHASpider(GCSpider):
                     "System,\u201d", "System").replace("BUILDER\u2122 ", "Builder").replace("\u2013", "")
 
                 if "Volume" in tmptitle:
-                    doc_num = doc_data[0][7:] + " Volume "+tmptitle.split()[-1]
+                    doc_num = f"{doc_data[0][7:]} Volume {tmptitle.split()[-1]}"
                 else:
                     doc_num = doc_data[0][7:]
                 doc_title = (doc_data[1][1:].replace("\u201cClinical", "Clinical").replace(

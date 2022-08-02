@@ -14,7 +14,14 @@ from selenium import webdriver
 
 def get_supported_downloadable_item(doc: Document) -> Optional[DownloadableItem]:
     """Get supported downloadable item corresponding to doc"""
-    return next((i for i in doc.downloadable_items if "."+i.doc_type.lower() in SUPPORTED_FILE_EXTENSIONS), None)
+    return next(
+        (
+            i
+            for i in doc.downloadable_items
+            if f".{i.doc_type.lower()}" in SUPPORTED_FILE_EXTENSIONS
+        ),
+        None,
+    )
 
 
 def read_docs_from_file(file_path: Path) -> Iterable[Document]:
@@ -24,8 +31,7 @@ def read_docs_from_file(file_path: Path) -> Iterable[Document]:
             if not json_str.strip():
                 continue
             try:
-                doc = Document.from_dict(json.loads(json_str))
-                yield doc  # because otherwise error is thrown outside the method
+                yield Document.from_dict(json.loads(json_str))
             except json.decoder.JSONDecodeError:
                 print("Encountered JSON decode error while parsing crawler output.")
                 continue
@@ -134,7 +140,7 @@ def unzip_docs_as_needed(ddoc: DownloadedDocument, output_dir: Union[Path, str])
     file = Path(ddoc.downloaded_file_path).resolve()
 
     # TODO: create set of recursive unzip methods for other archive types and a dispatcher
-    if not file.suffix.lower() == ".zip":
+    if file.suffix.lower() != ".zip":
         new_path = safe_move_file(file_path=ddoc.downloaded_file_path, output_path=output_dir)
         new_ddoc = copy.deepcopy(ddoc)
         new_ddoc.downloaded_file_path = new_path

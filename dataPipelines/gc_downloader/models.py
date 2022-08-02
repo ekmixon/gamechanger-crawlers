@@ -48,10 +48,8 @@ class ManifestEntry:
         """Serialize to json string"""
         def _supplementary_json_encoder(o: object) -> object:
             """Handle conversion of objects that default json encoder can't handle"""
-            if isinstance(o, Enum):
-                return o.value
-            else:
-                return json.JSONEncoder().default(o)
+            return o.value if isinstance(o, Enum) else json.JSONEncoder().default(o)
+
         return json.dumps(self.to_dict(), default=_supplementary_json_encoder)
 
     @staticmethod

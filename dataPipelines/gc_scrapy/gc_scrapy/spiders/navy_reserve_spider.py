@@ -39,8 +39,7 @@ class NavyReserveSpider(GCSeleniumSpider):
         ]
 
         for page_url in pages:
-            for item in self.parse_page(page_url, driver):
-                yield item
+            yield from self.parse_page(page_url, driver)
 
     def parse_page(self, url, driver) -> DocItem:
         if "Instruction" in url or "Notice" in url:
@@ -103,17 +102,18 @@ class NavyReserveSpider(GCSeleniumSpider):
                         doc_title = doc_title_raw.strip()
 
                         doc_type = type_prefix + type_suffix
-                        doc_name = doc_type + " " + doc_num
+                        doc_name = f"{doc_type} {doc_num}"
                         if re.search(r'\(\d\)', doc_title):
                             doc_name_suffix = re.split('\(', doc_title)
                             doc_name_suffix = re.split(
                                 '\)', doc_name_suffix[1])
                             if doc_name_suffix[0].strip() != "":
-                                doc_name = doc_name + '_' + doc_name_suffix[0]
+                                doc_name = f'{doc_name}_{doc_name_suffix[0]}'
                             if len(doc_name_suffix) > 1 and doc_name_suffix[1].strip() != "":
-                                doc_name = doc_name + '_' + \
-                                    doc_name_suffix[1].strip().replace(
-                                        " ", "_")
+                                doc_name = f'{doc_name}_' + doc_name_suffix[
+                                    1
+                                ].strip().replace(" ", "_")
+
 
                         web_url = self.ensure_full_href_url(
                             href_raw, driver.current_url)
@@ -146,8 +146,6 @@ class NavyReserveSpider(GCSeleniumSpider):
                 except:
                     print(
                         f'Unexpected Parsing Exception - attempting to continue: {e}')
-                    pass
-
                 if has_next_page:
                     el.click()
                     # wait until paging table is stale from page load, can be slow

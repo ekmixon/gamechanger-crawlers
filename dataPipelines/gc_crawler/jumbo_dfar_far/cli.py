@@ -29,11 +29,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        JumboFarDFarCrawler()
-        if not fake_run
-        else FakeJumboFarDFarCrawler()
-    )
+    crawler = FakeJumboFarDFarCrawler() if fake_run else JumboFarDFarCrawler()
 
     results = (
         crawler.iter_output_json()

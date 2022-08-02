@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        OPMCrawler()
-        if not fake_run
-        else FakeOPMCrawler()
-    )
+    crawler = FakeOPMCrawler() if fake_run else OPMCrawler()
 
     results = (
         crawler.iter_output_json()

@@ -112,7 +112,7 @@ class JsonWriterPipeline(object):
     def open_spider(self, spider):
         if not os.path.exists(OUTPUT_FOLDER_NAME):
             os.makedirs(OUTPUT_FOLDER_NAME)
-        json_name = './' + OUTPUT_FOLDER_NAME + '/' + spider.name + '.json'
+        json_name = f'./{OUTPUT_FOLDER_NAME}/{spider.name}.json'
 
         self.file = open(json_name, 'w')
         # Your scraped items will be saved in the file 'scraped_items.json'.

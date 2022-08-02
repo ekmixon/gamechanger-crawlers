@@ -39,12 +39,7 @@ class BupersSpider(GCSpider):
         if text == "BUPERSINST 12600.4 CH-1":
             return "BUPERSINST 12600.4CH1"
 
-        if not "1640.20B" in text:
-            # turn CH-1 into CH1 to match old doc_names
-            doc_name = re.sub(r'CH-(\d)', r'CH\1', text)
-            return doc_name
-        else:
-            return text
+        return re.sub(r'CH-(\d)', r'CH\1', text) if "1640.20B" not in text else text
 
     def parse(self, response):
         # first 3 rows are what should be header content but are just regular rows, so nth-child used
@@ -85,9 +80,16 @@ class BupersSpider(GCSpider):
             links_cleaned = self.filter_empty(links_raw)
 
             # happy path, equal num of docs, links, dates
-            if ((len(doc_nums_cleaned) == len(links_cleaned) == len(dates_cleaned))
-                    or (len(dates_cleaned) > len(doc_nums_cleaned))) \
-                    and (not 'CH-1' in doc_nums_cleaned):
+            if (
+                (
+                    (
+                        len(doc_nums_cleaned)
+                        == len(links_cleaned)
+                        == len(dates_cleaned)
+                    )
+                    or (len(dates_cleaned) > len(doc_nums_cleaned))
+                )
+            ) and 'CH-1' not in doc_nums_cleaned:
                 # some doc nums arent downloadable but have dates
                 # special case for equal num but should be a combined doc num with CH-1
 
@@ -124,9 +126,8 @@ class BupersSpider(GCSpider):
                         version_hash_raw_data=version_hash_fields,
                     )
 
-            # doc num was split, combine them into one string
             elif (len(doc_nums_cleaned) > len(dates_cleaned) and len(links_cleaned) == len(dates_cleaned)) \
-                    or (any(item in ['Vol 1', 'Vol 2', 'CH-1'] for item in doc_nums_cleaned)):
+                        or (any(item in ['Vol 1', 'Vol 2', 'CH-1'] for item in doc_nums_cleaned)):
                 # special cases for spit names of same doc
 
                 doc_num = " ".join(doc_nums_cleaned)
@@ -160,7 +161,6 @@ class BupersSpider(GCSpider):
                     version_hash_raw_data=version_hash_fields,
                 )
 
-            # there are supplemental downloadable items
             elif len(links_cleaned) > len(dates_cleaned):
                 doc_num = doc_nums_cleaned[0]
 

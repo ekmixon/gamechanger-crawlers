@@ -34,8 +34,8 @@ class DfarsSubpartSpider(GCSpider):
 
             href_raw = row.css('td:nth-child(4) a::attr(src)').get()
 
-            doc_num = doc_title.split()[0] + ' ' + doc_title.split()[1]
-            doc_name = self.doc_type + " " + doc_num
+            doc_num = f'{doc_title.split()[0]} {doc_title.split()[1]}'
+            doc_name = f"{self.doc_type} {doc_num}"
 
             web_url = self.ensure_full_href_url(href_raw, self.start_urls[0])
 

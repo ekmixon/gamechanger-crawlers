@@ -58,16 +58,12 @@ class USCodeParser(Parser):
 
                 previous_item_div = usc_item_divs[item_idx - 1]
 
-                previous_title_name_matcher = re.match(
+                if previous_title_name_matcher := re.match(
                     r"^.*\b(Title\s+\d+).*$",
                     previous_item_div.text,
                     flags=(re.IGNORECASE | re.DOTALL),
-                )
-
-                if previous_title_name_matcher:
-                    previous_title_name_abbreviated = previous_title_name_matcher.group(
-                        1
-                    )
+                ):
+                    previous_title_name_abbreviated = previous_title_name_matcher[1]
                 else:
                     raise ParsingError(
                         "Could not find appropriate US Code title corresponding to given Appendix"
@@ -78,17 +74,17 @@ class USCodeParser(Parser):
                 )
                 doc_name = new_doc_name
 
-            # DOCUMENT NUMBER
-            doc_name_matcher = re.match(
-                r"^.*(\bTitle\b)\s+(\d+)[^a-zA-Z]*(.*)$", doc_name, flags=re.IGNORECASE
-            )
-
-            if doc_name_matcher:
-                doc_num = doc_name_matcher.group(2)
-                doc_title = doc_name_matcher.group(3)
-            else:
+            if not (
+                doc_name_matcher := re.match(
+                    r"^.*(\bTitle\b)\s+(\d+)[^a-zA-Z]*(.*)$",
+                    doc_name,
+                    flags=re.IGNORECASE,
+                )
+            ):
                 raise ParsingError("Could not parse doc_name appropriately")
 
+            doc_num = doc_name_matcher[2]
+            doc_title = doc_name_matcher[3]
             # DOWNLOAD INFO
             pdf_url = abs_url(
                 page_url,

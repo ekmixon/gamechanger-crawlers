@@ -97,9 +97,7 @@ class ExecutiveOrdersSpider(GCSpider):
             json_url = doc.get('json_url')
             yield response.follow(url=json_url, callback=self.get_doc_detail_data)
 
-        next_url = data.get('next_page_url')
-
-        if next_url:
+        if next_url := data.get('next_page_url'):
             yield response.follow(url=next_url, callback=self.parse_data_page)
 
     def get_doc_detail_data(self, response):
@@ -120,14 +118,7 @@ class ExecutiveOrdersSpider(GCSpider):
         raw_text = str(response.body)
         doc = response.meta['doc']
 
-        exec_order_num_groups = exec_order_re.search(raw_text)
-        if exec_order_num_groups:
+        if exec_order_num_groups := exec_order_re.search(raw_text):
             exec_order_num = exec_order_num_groups.group(1)
             doc.update({"executive_order_number": exec_order_num})
-            yield self.make_doc_item_from_dict(doc)
-
-        else:
-            # still no number found, just use title
-            # 1 known example
-            # "Closing of departments and agencies on April 27, 1994, in memory of President Richard Nixon"
-            yield self.make_doc_item_from_dict(doc)
+        yield self.make_doc_item_from_dict(doc)

@@ -40,7 +40,7 @@ class NoopSchemaValidator(SchemaValidator):
     """Validator that'll match any dictionary object"""
 
     def __init__(self):
-        schema_dict = dict()
+        schema_dict = {}
         self.validator = JsonSchemaValidator(schema=schema_dict)
 
 

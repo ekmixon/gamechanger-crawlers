@@ -42,10 +42,8 @@ class MCPager(Pager):
 
         # extract the last page number
         last_page = int(page_list[-1].text.strip())
-        next_page_num = 1
-
         # loop through pages until the last
-        while next_page_num <= last_page:
+        for next_page_num in range(1, last_page + 1):
 
             if next_page_num != 1:
                 # extract the next link
@@ -54,13 +52,8 @@ class MCPager(Pager):
                 ActionChains(driver).move_to_element(next_button).perform()
                 next_button.click()
 
-            # increase next page tracker
-            next_page_num += 1
-
-            # yield page url and text
-            html_list = []
             html = driver.execute_script("return document.documentElement.outerHTML")
-            html_list.append((driver.current_url, html))
+            html_list = [(driver.current_url, html)]
             yield html_list[-1]
 
 
@@ -95,7 +88,7 @@ class MCParser(Parser):
 
             # skip deleted pubs
             if tbl_status == "DELETED" or len(tbl_title) == 0 or tbl_title == "FED LOG" or "POSTER" in tbl_title \
-                    or "ROAD MAPS" in tbl_title:
+                        or "ROAD MAPS" in tbl_title:
                 continue
 
             # patterns to extract
@@ -151,7 +144,7 @@ class MCParser(Parser):
 
                 # skip if no link exists or the document isn't loaded
                 if pdf_title == "" or "NOTLOADED" in pdf_title \
-                        or pdf_tag["href"] == "" or pdf_tag["href"] == "http://":
+                            or pdf_tag["href"] == "" or pdf_tag["href"] == "http://":
                     continue
 
                 # transform title
@@ -167,12 +160,12 @@ class MCParser(Parser):
                 if len(dtl_list) > 1:
                     if dtl_list[0] not in title and dtl_list[1] not in title:
                         doc_name = " ".join(dtl_list[:2]) + " " + title
-                    elif dtl_list[0] not in title and dtl_list[1] in title:
-                        doc_name = dtl_list[0] + " " + title
+                    elif dtl_list[0] not in title:
+                        doc_name = f"{dtl_list[0]} {title}"
                     else:
                         doc_name = title
                 elif dtl_list[0] not in title:
-                    doc_name = dtl_list[0] + " " + title
+                    doc_name = f"{dtl_list[0]} {title}"
                 else:
                     doc_name = title
 
@@ -219,7 +212,7 @@ class MCParser(Parser):
 
                     # only replace long titles with part number (if exists)
                     doc_name = re.sub("("+doc_name.split(" ")[-1]+"$)", part_num, title) \
-                        if part_num and len(doc_name) > 100 else doc_name
+                            if part_num and len(doc_name) > 100 else doc_name
 
                 elif tbl_type in ["UM", "MISC PUBS"]:
                     doc_type = tbl_type
@@ -262,7 +255,11 @@ class MCParser(Parser):
                 )
 
                 # set boolean if CAC is required to view document
-                cac_login_required = True if any(x in doc_title for x in cac_required) or pdf_url == page_url else False
+                cac_login_required = (
+                    any(x in doc_title for x in cac_required)
+                    or pdf_url == page_url
+                )
+
 
                 # all fields that will be used for versioning
                 version_hash_fields = {

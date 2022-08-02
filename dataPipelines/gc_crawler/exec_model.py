@@ -76,8 +76,7 @@ class Crawler:
     def iter_output_docs(self) -> Iterable[Document]:
         """iterates through docs returned by the parser"""
         for (page_link, page_text) in self._pager.iter_page_links_with_text():
-            for doc in self._parser.parse_docs_from_page(page_link, page_text):
-                yield doc
+            yield from self._parser.parse_docs_from_page(page_link, page_text)
 
     def iter_output_json(self) -> Iterable[str]:
         """Iterates through json-serialized docs returned by the parser"""

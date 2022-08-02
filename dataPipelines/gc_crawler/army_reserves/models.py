@@ -23,9 +23,7 @@ class ArmyReservePager(Pager):
 
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
-        url = 'https://www.usar.army.mil/Publications/'
-
-        yield url
+        yield 'https://www.usar.army.mil/Publications/'
 
 
 class ArmyReserveParser(Parser):
@@ -48,13 +46,13 @@ class ArmyReserveParser(Parser):
         for row in meta:
             if ((remove_html_tags((str(row))).isspace()) or not remove_html_tags((str(row)))):
                 continue
+            # print(links)
+            nums = []
             for cell in row.find_all('p'):
                 # print(cell.find("strong"))
                 words = ''
                 links = cell.find_all("a")
                 link_list = list(links)
-                # print(links)
-                nums = []
                 pdf_links = [link['href'] for link in link_list if "pdf" in link['href'] or "aspx" in link['href']]
                 if not pdf_links:
                     continue
@@ -75,7 +73,7 @@ class ArmyReserveParser(Parser):
         document_name = []
         [document_name.append(x) for x in doc_num if x not in document_name]
         document_type = []
-        [document_type.append(' '.join(x.split()[0:2])) for x in document_name]
+        [document_type.append(' '.join(x.split()[:2])) for x in document_name]
         document_number = []
         [document_number.append(' '.join(x.split()[2:])) for x in document_name]
         document_title = []
@@ -85,23 +83,19 @@ class ArmyReserveParser(Parser):
                           document_title]
         final = list(itertools.zip_longest(document_type, document_number, document_title, pub_links))
         final = [list(x) for x in final]
+        publication_date = "N/A"
         for item in final:
-            doc_name = item[0]+' '+item[1]
-            if (item[2] is None):
-                doc_title=""
-            else:
-                doc_title = item[2]
+            doc_name = f'{item[0]} {item[1]}'
+            doc_title = "" if (item[2] is None) else item[2]
             doc_num = item[1]
             doc_type = item[0]
-            publication_date = "N/A"
             if item[3].startswith("https"):
                 cac_login_required=True
                 url = item[3]
-                url = url.replace(" ","%20")
             else:
                 cac_login_required=False
-                url = "https://www.usar.army.mil"+item[3]
-                url = url.replace(" ","%20")
+                url = f"https://www.usar.army.mil{item[3]}"
+            url = url.replace(" ","%20")
             pdf_di = DownloadableItem(doc_type='pdf', web_url=url)
             version_hash_fields = {
                 "item_currency": str(url).split('/')[-1],  # version metadata found on pdf links

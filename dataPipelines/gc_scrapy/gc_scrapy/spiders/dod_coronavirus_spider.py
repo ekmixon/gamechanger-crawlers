@@ -45,8 +45,7 @@ class DODCoronavirusSpider(GCSpider):
                 (file_type, has_ext) = self.get_href_file_extension_does_exist(
                     href_raw)
 
-                publication_date_raw = item.css('p.date::text').get()
-                if publication_date_raw:
+                if publication_date_raw := item.css('p.date::text').get():
                     publication_date = publication_date_raw.strip()
                 else:
                     publication_date = publication_date_raw
@@ -103,9 +102,11 @@ class DODCoronavirusSpider(GCSpider):
     @staticmethod
     def get_unknown_layout_hrefs(response) -> list:
         anchors = response.css('a')
-        covid_hrefs = [a.css("::attr(href)").get() for a in anchors if covid_re.search(
-            " ".join(a.css('*::text').getall()))]
-        return covid_hrefs
+        return [
+            a.css("::attr(href)").get()
+            for a in anchors
+            if covid_re.search(" ".join(a.css('*::text').getall()))
+        ]
 
     def parse_follow_page(self, response) -> typing.Union[DocItem, None]:
         doc_item: DocItem = response.meta["item"]

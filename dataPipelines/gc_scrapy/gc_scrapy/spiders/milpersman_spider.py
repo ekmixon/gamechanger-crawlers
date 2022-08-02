@@ -30,19 +30,16 @@ class MilpersmanSpider(GCSpider):
             response.css('li[title="MILPERSMAN"] ul li a') if has_digit(a.css("::text").get())
         ]
 
-        for res in response.follow_all(anchors, self.parse_doc_type):
-            yield res
+        yield from response.follow_all(anchors, self.parse_doc_type)
 
     def parse_doc_type(self, response):
         sub_anchors = response.css("ul.afAccordionMenuSubMenu a")
         # e.g. MILPERSMAN 1000 page has a dropdown for each subsection
         # pass each of those subpages to parse_page
         if len(sub_anchors):
-            for res in response.follow_all(sub_anchors, self.parse_page):
-                yield res
+            yield from response.follow_all(sub_anchors, self.parse_page)
         else:
-            for res in self.parse_page(response):
-                yield res
+            yield from self.parse_page(response)
 
     def parse_page(self, response):
         # get all rows that have an anchor tag in the first td

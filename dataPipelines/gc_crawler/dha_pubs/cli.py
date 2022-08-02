@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        DHACrawler()
-        if not fake_run
-        else FakeDHACrawler()
-    )
+    crawler = FakeDHACrawler() if fake_run else DHACrawler()
 
     results = (
         crawler.iter_output_json()

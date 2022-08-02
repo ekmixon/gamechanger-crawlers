@@ -21,8 +21,7 @@ class JumboFarDFarPager(Pager):
 
     def iter_page_links(self) -> Iterable[str]:
         """Iterator for page links"""
-        base_url = 'https://www.acquisition.gov/'
-        yield base_url
+        yield 'https://www.acquisition.gov/'
 
 
 class JumboFarDFarParser(Parser):
@@ -34,18 +33,18 @@ class JumboFarDFarParser(Parser):
         # parse html response
         base_url = 'https://www.acquisition.gov/'
 
-        far_url = base_url + 'far'
-        dfar_url = base_url + 'dfars'
+        far_url = f'{base_url}far'
+        dfar_url = f'{base_url}dfars'
         sources = [far_url, dfar_url]
         parsed_docs = []
 
+        cac_login_required = False
         for data in sources:
             # reset variables to ensure there is no carryover between rows
             doc_num = ''
             doc_name = ''
             doc_title = ''
             publication_date = ''
-            cac_login_required = False
             pdf_url = ''
             pdf_di = None
             doc_type = ''
@@ -64,7 +63,7 @@ class JumboFarDFarParser(Parser):
                         web_url=pdf_url
                     )
                     doc_type = "FAR"
-                    doc_name = doc_type + ' ' + doc_num
+                    doc_name = f'{doc_type} {doc_num}'
             if data == dfar_url:
                 for row in table.find_all('tr')[1:]:
                     doc_title = 'Defense Federal Acquisition Regulation Supplement'
@@ -77,7 +76,7 @@ class JumboFarDFarParser(Parser):
                         web_url=pdf_url
                     )
                     doc_type = "DFARS"
-                    doc_name = doc_type + ' ' + doc_num
+                    doc_name = f'{doc_type} {doc_num}'
 
             version_hash_fields = {
                 "item_currency": pdf_url.split('/')[-1],  # version metadata found on pdf links
@@ -91,11 +90,12 @@ class JumboFarDFarParser(Parser):
                 doc_type=doc_type,
                 publication_date=publication_date,
                 cac_login_required=cac_login_required,
-                crawler_used="jumbo_" + doc_type,
+                crawler_used=f"jumbo_{doc_type}",
                 source_page_url=page_url.strip(),
                 version_hash_raw_data=version_hash_fields,
-                downloadable_items=[pdf_di]
+                downloadable_items=[pdf_di],
             )
+
 
             parsed_docs.append(doc)
 

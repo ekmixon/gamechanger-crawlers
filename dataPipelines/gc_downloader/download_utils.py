@@ -18,12 +18,11 @@ def is_downloadable(url: str) -> bool:
     """Does the url contain a downloadable resource"""
     h = requests.head(url, allow_redirects=True)
     header = h.headers
-    content_type = header.get('content-type')
-    if content_type:
+    if content_type := header.get('content-type'):
         if 'text' in content_type.lower():
             return False
         if 'html' in content_type.lower():
-            return False 
+            return False
     return True
 
 
@@ -31,13 +30,7 @@ def is_supported_filename(filename: str) -> bool:
     """Check if proposed filename is one of those supported by downloader"""
     file_suffix = Path(filename).suffix.lower()
 
-    if not file_suffix:
-        return False
-
-    if file_suffix not in SUPPORTED_FILE_EXTENSIONS:
-        return False
-
-    return True
+    return file_suffix in SUPPORTED_FILE_EXTENSIONS if file_suffix else False
 
 
 def derive_download_filename(resp: requests.Response, request_url: Optional[str] = None) -> str:
@@ -50,8 +43,6 @@ def derive_download_filename(resp: requests.Response, request_url: Optional[str]
     filename_from_request_url = normalize_string(Path(urlparse(request_url or '').path).name)
     filename_from_response_url = normalize_string(Path(urlparse(resp.url).path).name)
     filename_from_headers = ""
-    filename_of_last_resort = "unknown_file"
-
     if "Content-Disposition" in resp.headers.keys():
         filename_from_headers = normalize_string(re.findall("filename=(.+)", resp.headers["Content-Disposition"])[0])
 
@@ -62,7 +53,7 @@ def derive_download_filename(resp: requests.Response, request_url: Optional[str]
     elif is_supported_filename(filename_from_request_url):
         return filename_from_request_url
     else:
-        return filename_of_last_resort
+        return "unknown_file"
 
 
 def derive_download_filename_driver(request_url: str, driver_url: Optional[str] = None) -> str:
@@ -74,14 +65,15 @@ def derive_download_filename_driver(request_url: str, driver_url: Optional[str] 
     """
     filename_from_request_url = Path(urlparse(request_url).path).name.replace("%20", " ")
     filename_from_driver_url = Path(urlparse(driver_url or '').path).name.replace("%20", " ")
-    filename_of_last_resort = "unknown_file"
-
     if is_supported_filename(filename_from_driver_url):
         return filename_from_driver_url
-    if is_supported_filename(filename_from_request_url):
-        return filename_from_request_url
-    else:
-        return filename_of_last_resort
+    filename_of_last_resort = "unknown_file"
+
+    return (
+        filename_from_request_url
+        if is_supported_filename(filename_from_request_url)
+        else filename_of_last_resort
+    )
 
 
 def download_file(
@@ -109,10 +101,10 @@ def download_file(
 
     _output_dir = Path(output_dir)
     if not _output_dir.is_dir():
-        raise ValueError("Output dir doesn't exist: {}".format(output_dir))
+        raise ValueError(f"Output dir doesn't exist: {output_dir}")
 
     local_file_path: Optional[Path] = None
-    for retry_attempt in range(int(num_retries)):
+    for retry_attempt in range(num_retries):
         # TODO: Implement actual request throttling through custom request adapter
         try:
             # NOTE the stream=True parameter below
@@ -181,19 +173,18 @@ def download_file_with_driver(
 
     _output_dir = Path(output_dir)
     if not _output_dir.is_dir():
-        raise ValueError("Output dir doesn't exist: {}".format(output_dir))
+        raise ValueError(f"Output dir doesn't exist: {output_dir}")
 
     local_file_path: Optional[Path] = None
     temp_file_path: Optional[Path] = None
     download_file_path: Optional[Path] = None
-    for retry_attempt in range(int(num_retries)):
-
+    for _ in range(num_retries):
         # TODO: Implement actual request throttling through custom request adapter
         try:
 
             local_file_path = _output_dir.joinpath(derive_download_filename_driver(request_url=url))
             temp_file_path = get_available_path(local_file_path)
-            download_file_path = Path(str(local_file_path)+".crdownload")
+            download_file_path = Path(f"{str(local_file_path)}.crdownload")
 
             if local_file_path.exists() and overwrite:
                 os.rename(local_file_path, temp_file_path)
@@ -240,8 +231,4 @@ def download_file_with_driver(
 
 def doc_in_manifest(manifest: List[Any], version_hash: str) -> bool:
     """checks if document is in the manifest"""
-    flag = False
-    if any(d['version_hash'] == version_hash for d in manifest):
-        flag = True
-
-    return flag
+    return any((d['version_hash'] == version_hash for d in manifest))

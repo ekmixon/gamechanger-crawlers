@@ -28,11 +28,7 @@ def cli():
 )
 def run(fake_run: bool, no_validation: bool, output: Optional[TextIOBase]) -> None:
 
-    crawler = (
-        JCSCrawler()
-        if not fake_run
-        else FakeJCSCrawler()
-    )
+    crawler = FakeJCSCrawler() if fake_run else JCSCrawler()
 
     results = (
         crawler.iter_output_json()

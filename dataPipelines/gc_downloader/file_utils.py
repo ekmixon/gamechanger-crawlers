@@ -74,11 +74,9 @@ def iter_all_files(dir_path: Union[Path, str], recursive: bool = True) -> Iterab
         raise ValueError(f"Got invalid dir_path: {_dir_path}")
 
     if recursive:
-        for file in filter(lambda p: p.is_file(), _dir_path.rglob("*")):
-            yield file
+        yield from filter(lambda p: p.is_file(), _dir_path.rglob("*"))
     else:
-        for file in filter(lambda p: p.is_file(), _dir_path.glob("*")):
-            yield file
+        yield from filter(lambda p: p.is_file(), _dir_path.glob("*"))
 
 
 def md5_for_file(file_path: Union[Path, str], block_size: int = 8192) -> str:
@@ -93,17 +91,17 @@ def md5_for_file(file_path: Union[Path, str], block_size: int = 8192) -> str:
     if not _path.is_file():
         raise ValueError(f"Provided file path is invalid: {file_path}")
 
-    if not (block_size >= 0 and not block_size % 128):
+    if block_size < 0 or block_size % 128:
         raise ValueError(f"Provided block_size is invalid: {block_size}")
 
     md5 = hashlib.md5()
     with open(_path, 'rb') as f:
         while True:
-            data = f.read(block_size)
-            if not data:
-                break
-            md5.update(data)
+            if data := f.read(block_size):
+                md5.update(data)
 
+            else:
+                break
     return md5.hexdigest()
 
 
@@ -180,4 +178,4 @@ def purge_dir(dir_path):
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
         except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+            print(f'Failed to delete {file_path}. Reason: {e}')

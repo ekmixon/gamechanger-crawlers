@@ -71,8 +71,10 @@ class IcPoliciesSpider(GCSpider):
             publication_date = matches[-1] if len(matches) > 0 else None
 
             # set boolean if CAC is required to view document
-            cac_login_required = True if any(x in pdf_url for x in cac_required) \
-                or any(x in doc_title for x in cac_required) else False
+            cac_login_required = any(x in pdf_url for x in cac_required) or any(
+                x in doc_title for x in cac_required
+            )
+
 
             # all fields that will be used for versioning
             version_hash_fields = {
