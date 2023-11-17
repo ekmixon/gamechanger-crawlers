@@ -11,7 +11,7 @@ lxml==4.5.1
 PyMuPDF==1.17.2
 pyrsistent==0.16.0
 requests==2.23.0
-selenium==3.141.0
+selenium==4.15.1
 Scrapy==2.1.0
 six==1.15.0
 soupsieve==2.0.1
